@@ -17,5 +17,6 @@ colunas = [desc[0] for desc in cursor.description]
 
 df = pd.DataFrame(cursor.fetchall())
 df.columns = colunas
-print(df) 
+df.to_excel("df_tabela.xlsx")
+""" print(df)  """
 
