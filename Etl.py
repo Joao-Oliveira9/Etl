@@ -26,11 +26,31 @@ def write_into_excel(name_file,dataframe):
         dataframe.to_excel(writer,index=False)
 
 def defining_cell_length(dataframe,cursor):
+    """ print(len(dataframe.axes[0])) """
     colunas = [desc[0] for desc in cursor.description]
     dataframe.columns = colunas
     length_of_colummn = len(dataframe.at[0,'aluno_id']) 
     return length_of_colummn
 
-def columns_length(dataframe,cursor):
-    print(cursor.description)
+
+def teste(dataframe,cursor,ws):
+    count = 0
+    for coluna in cursor.description:
+        
+        """" cursor.description[0] """
+        max_width = 0
+        for linha in dataframe.axes[0]:
+            """ print("passei aqui") """
+            coordenada = dataframe.at[linha,coluna.name]
+            if isinstance(coordenada, pd.Timestamp):
+                coordenada = str(coordenada)
+                """ print(coordenada) """
+            
+            length_of_colummn = len(coordenada) 
+            if length_of_colummn > max_width:
+                max_width = length_of_colummn + 1
+
+        count = count + 1
+        ws.column_dimensions[chr(count+64)].width = max_width
     
+    return ws

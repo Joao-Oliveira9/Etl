@@ -12,6 +12,7 @@ write_into_excel(file_name,dataframe)
 wb = load_workbook("df_tabela.xlsx")
 ws = wb["Sheet1"]
 
-ws.column_dimensions["A"].width = length_cell
-
+ws = teste(dataframe,cursor,ws) 
 wb.save("df_tabela.xlsx")
+
+
