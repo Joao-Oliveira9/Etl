@@ -31,19 +31,6 @@ def defining_cell_length(dataframe,cursor):
     length_of_colummn = len(dataframe.at[0,'aluno_id']) 
     return length_of_colummn
 
-statement = "Select * from tb_aluno"
-file_name = "df_tabela.xlsx"
-
-cursor = connection_with_database("db_cadastro","postgres","root","localhost","5432")
-dataframe = create_dataframe(statement,cursor)
-write_into_excel(file_name,dataframe)
-
-length_cell = defining_cell_length(dataframe,cursor)
-
-wb = load_workbook("df_tabela.xlsx")
-ws = wb["Sheet1"]
-
-ws.column_dimensions["A"].width = length_cell
-
-wb.save("df_tabela.xlsx")
-
+def columns_length(dataframe,cursor):
+    print(cursor.description)
+    
