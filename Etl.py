@@ -2,44 +2,48 @@ import psycopg2 as ps
 import pandas as pd
 from openpyxl import load_workbook
 
-""" conexao com o banco de dados """
-conexao = ps.connect(
-    database="db_cadastro",
-    user='postgres',
-    password='root',
-    host='localhost',
-    port= '5432'
-)
+def connection_with_database(database_name,user_name,password,host,port):
+    conexao = ps.connect(
+    database= database_name,
+    user=user_name,
+    password=password,
+    host=host,
+    port= port
+    )
+    """ port 5432 é a porta default do postgress """
+    cursor = conexao.cursor()
+    return cursor
 
-"""criacao de um cursor pra execucao dos comandos sql"""
-cursor = conexao.cursor()
+def create_dataframe(statement,cursor):
+    cursor.execute(statement)
+    dataframe = pd.DataFrame(cursor.fetchall())
+    return dataframe
 
-""" montando um statement """
+def write_into_excel(name_file,dataframe):
+    """ Com ExcelWriter indicamos o contexto/o arquivo onde deve ser transportado os dados"""
+    with pd.ExcelWriter(name_file,engine='openpyxl') as writer:
+        """ ExcelWriter com to_excel caso tenha mais de uma tabela """
+        dataframe.to_excel(writer,index=False)
+
+def defining_cell_length(dataframe,cursor):
+    colunas = [desc[0] for desc in cursor.description]
+    dataframe.columns = colunas
+    length_of_colummn = len(dataframe.at[0,'aluno_id']) 
+    return length_of_colummn
+
 statement = "Select * from tb_aluno"
+file_name = "df_tabela.xlsx"
 
-""" executando esse statement """
-cursor.execute(statement)
+cursor = connection_with_database("db_cadastro","postgres","root","localhost","5432")
+dataframe = create_dataframe(statement,cursor)
+write_into_excel(file_name,dataframe)
 
-""" processo de compressao de lista """
-colunas = [desc[0] for desc in cursor.description]
-
-""" resulado do execute """
-df = pd.DataFrame(cursor.fetchall())
-df.columns = colunas
-
-
-""" pd.ExcelWriter ele prepara o contexto da aplicacao, mostrando qual o caminho que deve ser colocado o execel """
-with pd.ExcelWriter('df_tabela.xlsx', engine='openpyxl') as writer:
-    df.to_excel(writer, index=False)
-
-
-""" coletando o tamanho de uma coluna que usa o padrao uuid """
-length_of_colummn = len(df.at[0,'aluno_id']) 
-print(length_of_colummn)
+length_cell = defining_cell_length(dataframe,cursor)
 
 wb = load_workbook("df_tabela.xlsx")
 ws = wb["Sheet1"]
 
-ws.column_dimensions["A"].width = 36
+ws.column_dimensions["A"].width = length_cell
 
 wb.save("df_tabela.xlsx")
+
