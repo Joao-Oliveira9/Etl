@@ -2,6 +2,7 @@ import psycopg2 as ps
 import pandas as pd
 from openpyxl import load_workbook
 
+
 def connection_with_database(database_name,user_name,password,host,port):
     conexao = ps.connect(
     database= database_name,
@@ -25,25 +26,49 @@ def write_into_excel(name_file,dataframe):
         """ ExcelWriter com to_excel caso tenha mais de uma tabela """
         dataframe.to_excel(writer,index=False)
 
-def defining_cell_length(dataframe,cursor):
-    """ print(len(dataframe.axes[0])) """
+
+""" def defining_cell_length(dataframe,cursor):
     colunas = [desc[0] for desc in cursor.description]
     dataframe.columns = colunas
     length_of_colummn = len(dataframe.at[0,'aluno_id']) 
-    return length_of_colummn
+    return length_of_colummn """
 
 
-def adjusting_cell_size(dataframe,cursor,ws):
+def adjusting_cell_size2(dataframe,ws):
+    count = 0
+    for coluna in dataframe.columns:
+        max_width = 0
+        """ print(coluna) """
+        """ print(dataframe[coluna][0])  """
+       
+        for linha in range(0,len(dataframe)):
+            """ print(linha) """
+            dado = dataframe[coluna][linha]
+            """ print(dado) """
+            if isinstance(dado, float):
+                dado = str(dado)
+
+
+            tamanho_dado = len(dado)
+            if(tamanho_dado > max_width):
+                max_width = tamanho_dado
+        count = count + 1
+    
+        ws.column_dimensions[chr(count+64)].width = max_width + 1
+    return ws
+        
+
+""" def adjusting_cell_size(dataframe,cursor,ws):
     count = 0
     for coluna in cursor.description:
-        """" cursor.description[0] """
+     
         max_width = 0
         for linha in dataframe.axes[0]:
-            """ print("passei aqui") """
+           
             coordenada = dataframe.at[linha,coluna.name]
             if isinstance(coordenada, pd.Timestamp):
                 coordenada = str(coordenada)
-                """ print(coordenada) """
+             
             
             length_of_colummn = len(coordenada) 
             if length_of_colummn > max_width:
@@ -52,20 +77,7 @@ def adjusting_cell_size(dataframe,cursor,ws):
         count = count + 1
         ws.column_dimensions[chr(count+64)].width = max_width
     return ws
-
-""" 
-conexao = ps.connect(
-    database= "db_cadastro",
-    user="postgres",
-    password="root",
-    host="localhost",
-    port= "5432"
-)
-
-
-
-
-cursor = conexao.cursor() """
+ """
 
 def create_dataframe2(cursor):
     statement = """ select tb_aluno.nome,tb_curso.nome,tb_aluno_disciplina.nota from tb_aluno inner join tb_aluno_disciplina on tb_aluno.aluno_id = tb_aluno_disciplina.aluno_id 
@@ -78,7 +90,7 @@ def create_dataframe2(cursor):
     cursor.execute(statement_nome_aluno)
     dataframe_nome_aluno = pd.DataFrame(cursor.fetchall())
     dataframe_nome_aluno_sorted = dataframe_nome_aluno.sort_values(by=dataframe_nome_aluno.columns[0]).reset_index(drop=True)
-    print(cursor.description)
+    """ print(cursor.description) """
 
     numero_linhas = len(dataframe_nome_aluno)
 
@@ -94,7 +106,7 @@ def create_dataframe2(cursor):
 
 
     dataframe_ordenado = dataframe.sort_values(by=dataframe.columns[0]).reset_index(drop=True)
-    print(dataframe_ordenado) 
+    """ print(dataframe_ordenado)  """
 
     lista_notas = []
     nota_total = 0
@@ -120,9 +132,11 @@ def create_dataframe2(cursor):
              lista_notas.append(nota_total)
 
 
-    print(lista_notas)
+    """ print(lista_notas) """
 
     dataframe_nome_aluno_sorted["Média das Notas"] = lista_notas
     dataframe_nome_aluno_sorted.rename(columns={dataframe.columns[0]: 'nome'}, inplace=True)
-    print(dataframe_nome_aluno_sorted)
+    """ print(dataframe_nome_aluno_sorted) """
+    return dataframe_nome_aluno_sorted
     
+
